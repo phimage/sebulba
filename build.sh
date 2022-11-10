@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [[ "$OSTYPE" == "darwin"* ]]; then  # Mac OSX
-    bin=.build/apple/Products/Release/{{ tmplr.repo_name }}
+    bin=.build/apple/Products/Release/sebulba
 else
-    bin=.build/release/{{ tmplr.repo_name }}
+    bin=.build/release/sebulba
 fi
 
 rm -f $bin

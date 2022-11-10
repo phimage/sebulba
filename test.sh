@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [[ "$OSTYPE" == "darwin"* ]]; then  # Mac OSX
-    cmd=.build/apple/Products/Release/{{ tmplr.repo_name }}
+    cmd=.build/apple/Products/Release/sebulba
 else
-    cmd=.build/release/{{ tmplr.repo_name }}
+    cmd=.build/release/sebulba
 fi
 file=.build/checkouts/XcodeProjKit/
 

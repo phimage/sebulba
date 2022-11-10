@@ -4,7 +4,7 @@ TMP="${TMPDIR}"
 if [ "x$TMP" = "x" ]; then
   TMP="/tmp/"
 fi
-TMP="${TMP}{{ tmplr.repo_name }}.$$"
+TMP="${TMP}sebulba.$$"
 rm -rf "$TMP" || true
 mkdir "$TMP"
 if [ $? -ne 0 ]; then
@@ -25,19 +25,19 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
     exit 1
   fi
   if [ -z "$(which swift)" ]; then
-    archiveName={{ tmplr.repo_name }}-x86_64-static-ubuntu-$DISTRIB_CODENAME.zip
+    archiveName=sebulba-x86_64-static-ubuntu-$DISTRIB_CODENAME.zip
   else
-    archiveName={{ tmplr.repo_name }}-X86_64-dynamic_swift_5.7-ubuntu-$DISTRIB_CODENAME.zip
+    archiveName=sebulba-X86_64-dynamic_swift_5.7-ubuntu-$DISTRIB_CODENAME.zip
   fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then  # Mac OSX
-  archiveName={{ tmplr.repo_name }}.zip
+  archiveName=sebulba.zip
 else
   echo "Unknown os type $OSTYPE, macOS or ubuntu"
   exit 1
 fi
 
 archive=$TMP/$archiveName
-curl -sL https://github.com/{{ tmplr.owner_name}}/{{ tmplr.repo_name }}/releases/latest/download/$archiveName -o $archive
+curl -sL https://github.com/phimage/sebulba/releases/latest/download/$archiveName -o $archive
 
 if [[ "$OSTYPE" == "darwin"* ]]; then  # Mac OSX
   unzip -q $archive -d $TMP/
@@ -45,11 +45,11 @@ else
   unzip -q $archive -d $TMP/
 fi
 
-binary=$TMP/{{ tmplr.repo_name }} 
+binary=$TMP/sebulba 
 
 dst="/usr/local/bin"
-echo "Install into $dst/{{ tmplr.repo_name }}"
-sudo rm -f $dst/{{ tmplr.repo_name }}
+echo "Install into $dst/sebulba"
+sudo rm -f $dst/sebulba
 sudo cp $binary $dst/
 
 rm -rf "$TMP"
