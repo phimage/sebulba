@@ -57,7 +57,7 @@ struct Cmd: ParsableCommand {
     }
 
     func manageTarget(_ target: PBXTarget) {
-        print(" 🧹 Deintegrating target \(target.name)")
+        print(" 🎯 Deintegrating target \(target.name)")
         manageShellScriptPhase(target, "Copy Pods Resources")
         manageShellScriptPhase(target, "Check Pods Manifest.lock")
         manageShellScriptPhase(target, "Embed Pods Frameworks")
@@ -73,10 +73,24 @@ struct Cmd: ParsableCommand {
     func managePodsLibraries(_ target: PBXTarget) {
         let buildPhases = target.buildPhases
             .compactMap { $0 as? PBXFrameworksBuildPhase }
-        // TODO: filter on regex /^(libPods.*\.a)|(Pods.*\.framework)$/i
-
-        // print("Removing Pod libraries from build phase:")
+        
+        var buildFiles = buildPhases.flatMap({$0.files})
+        buildFiles = buildFiles.filter {
+            (($0.fileRef?.name?.hasPrefix("libPods") ?? false) && ($0.fileRef?.name?.hasSuffix( ".a") ?? false))
+            || (($0.fileRef?.name?.hasPrefix( "Pods") ?? false) && ($0.fileRef?.name?.hasSuffix(".framework") ?? false))
+        }
+        if (buildFiles.isEmpty) {
+            return
+        }
+        print("Removing Pod libraries from build phase:")
         // TODO: remove pod libraries
+        
+        for file in buildFiles {
+            // TODO: remove fileRef
+            // TODO: remove file
+            print("  🗑 \(file.fileRef?.name ?? "")")
+        }
+        print("   ↳ Deleted \(buildFiles.count) build files.")
     }
 
     func manageUserShellScriptPhase(_ target: PBXTarget) {
@@ -85,8 +99,9 @@ struct Cmd: ParsableCommand {
             .filter { $0.name?.hasPrefix("[CP-User] ") ?? false}
         for phase in buildPhases {
             // TODO: remove phase
+            print("  🗑 \(phase.name ?? "")")
         }
-        print("  🗑 Deleted \(buildPhases.count) user build phases.")
+        print("   ↳ Deleted \(buildPhases.count) user build phases.")
     }
 
     func manageShellScriptPhase(_ target: PBXTarget, _ phaseName: String) {
@@ -95,8 +110,9 @@ struct Cmd: ParsableCommand {
             .filter { $0.name?.contains(phaseName) ?? false}
         for phase in buildPhases {
             // TODO: remove phase
+            print("  🗑 \(phase.name ?? "")")
         }
-        print("  🗑 Deleted \(buildPhases.count) user build phases \(phaseName).")
+        print("   ↳ Deleted \(buildPhases.count) user build phases \(phaseName).")
     }
 
     func deleteEmptyGroup(_ project: XcodeProj, _ groupName: String) {
@@ -106,8 +122,9 @@ struct Cmd: ParsableCommand {
             .filter { $0.isEmpty }
         for group in groups {
             // TODO: remove group
+            print("  🗑 \(group.name ?? "")")
         }
-        print("  🗑 Deleted \(groups.count) empty `\(groupName)` groups from project.")
+        print("   ↳ Deleted \(groups.count) empty `\(groupName)` groups from project.")
 
     }
 
@@ -128,10 +145,13 @@ struct Cmd: ParsableCommand {
         guard let mainGroup = project.project.mainGroup else { return }
         let groups = mainGroup.allSubGroups + [mainGroup]
         let files = groups.flatMap({ $0.fileRefs})
-        // TODO: file filter on files with name= /^Pods.*\.xcconfig$/i or path= /^(libPods.*\.a)|(Pods_.*\.framework)$/i
+            .filter { (($0.name?.hasPrefix("Pods") ?? false) && ($0.name?.hasSuffix( ".xcconfig") ?? false))
+                || (($0.path?.hasPrefix("libPods") ?? false) && ($0.path?.hasSuffix( ".a") ?? false))
+                || (($0.path?.hasPrefix( "Pods") ?? false) && ($0.path?.hasSuffix(".framework") ?? false))
+            }
 
         if files.isEmpty { return }
-        print("🗑 Deleting Pod file references from project")
+        print("📄 Deleting Pod file references from project")
         for file in files {
             print("   🗑 \(file.name ?? file.path ?? "")")
             // TODO: remove file
