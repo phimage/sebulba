@@ -1,0 +1,39 @@
+steps:
+  #
+  # Read the name of the repo owner
+  # It might be set by Github workflow as an environment variable,
+  # or it might be set in local git settings.
+  # If all fails, we will simply ask the user.
+  #
+  - read: owner_name
+    from: env.owner_name
+    fallback:
+      from: git.author_name
+      fallback:
+        prompt: What is your name?
+
+  #
+  # Similar to name and email of the owner of the repo. However,
+  # if we're not invoked via an Action and there is no local git,
+  # then we'll just use the directory name as the project name.
+  #
+  - read: repo_name
+    from: env.repo_name
+    fallback:
+      from: git.remote_name
+      fallback:
+        from: path.rootdir
+
+  - copy: Sources/repo_name/repo_name.swift
+    to:
+      eval: Sources/{{ tmplr.repo_name }}/{{ tmplr.repo_name }}.swift
+
+  - remove: Sources/repo_name/repo_name.swift
+
+  - update: README.md
+  - update: build.sh
+  - update: install.sh
+  - update: test.sh
+  - update: Package.swift
+  - update: .github/FUNDING.yml
+  - update: Sources/{{ tmplr.repo_name }}/{{ tmplr.repo_name }}.swift

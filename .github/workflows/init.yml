@@ -1,0 +1,55 @@
+# .github/workflows/init.yml
+name: Initialize Template
+
+#
+# Run this on creation of a branch or ref
+#
+on:
+  push:
+    branches: main
+
+jobs:
+  build:
+    #
+    # Change this to make sure your workflow doesn't initialize on your template!
+    #
+    if: github.repository != 'phimage/swift-cli-template'
+
+    runs-on: ubuntu-latest
+    steps:
+      #
+      # Checkout the code
+      #
+      - uses: actions/checkout@v2
+      
+      #
+      # Check if there is a template recipe
+      #
+      - id: template_exists
+        name: Check template
+        uses: andstor/file-existence-action@v2
+        with:
+          files: .tmplr.yml
+      
+      #
+      # Run tmplr with required environment variables,
+      # and remove the template recipe afterwards.
+      #
+      # Use this to get all the values you want from GitHub Action contexts
+      # and set them as environment variables for tmplr.
+      #
+      - name: Apply template
+        if: steps.template_exists.outputs.files_exists == 'true'
+        run: npx --yes tmplr && rm -fr .tmplr.yml && rm -fr .github/workflows/init.yml
+        env:
+          owner_name: ${{ github.event.repository.owner.name }}
+          owner_email: ${{ github.event.repository.owner.email }}
+          repo_name: ${{ github.event.repository.name }}
+          repo_url: ${{ github.event.repository.ssh_url }}
+
+      #
+      # Commit the code
+      #
+      - uses: EndBug/add-and-commit@v9
+        with:
+          message: Initialize from template

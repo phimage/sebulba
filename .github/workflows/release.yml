@@ -1,0 +1,19 @@
+name: release
+on: 
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Swift ${{ matrix.swift }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        swift: ["5.7"]
+    steps:
+    - uses: phimage/action-swift-cli-build@v1
+      with:
+        swift-version: ${{ matrix.swift }}
+        upload-to-release: true
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
