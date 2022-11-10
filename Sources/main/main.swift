@@ -10,8 +10,15 @@ struct Cmd: ParsableCommand {
     @Argument(help: "File or folder to update")
     var path: String
 
+    @Flag(help: "Show a pod art")
+    var art: Bool = false
+
     mutating func run() throws {
         let url = URL(fileURLWithPath: self.path)
+
+        if art {
+            printPod()
+        }
 
         if url.pathExtension == "xcodeproj" || url.pathExtension == "pbxproj" {
             try manageXcodeProj(url)
@@ -62,7 +69,7 @@ struct Cmd: ParsableCommand {
     func removePodDirectory() {
         // TODO: remove pod directory
     }
-  
+
     func managePodsLibraries(_ target: PBXTarget) {
         let buildPhases = target.buildPhases
             .compactMap { $0 as? PBXFrameworksBuildPhase }
@@ -133,6 +140,65 @@ struct Cmd: ParsableCommand {
         // Delete empty `Pods` group if exists
         deleteEmptyGroup(project, "Pods")
         deleteEmptyGroup(project, "Frameworks")
+    }
+
+    func printPod() { // swiftlint:disable:this function_body_length
+        // source: https://www.joereiss.net/starwars/ascii/sebulba.txt
+        let pod = """
+                        /H\\                 /H\\
+  ,--------__,----------)-(                 )-(----------.__--------.
+  |  __,--'             | /                 \\ |             `--.__  |
+  | /                   | |                 | |                   \\ |
+  ||..          ,---._,-(/      _            \\)-._,---.          ,,||
+  |/'':.        |ID ||   ,-  _ /     ,  \\   ,_   || dI|        .:''\\|
+  |    `:.__    | | ||--K-- / Y _,-=X--._>-' _>=-|| | |    __,:'    |
+  /    .({})`   | | ||_  `-'   V   '   /    ^   _|| | |   '({}),    \\
+ |         `:.  |_|='|_)                       (_|`=|_|  ,:'         |
+ /        __,``' |___  |                       |   \\___`''.__        \\
+(   __.--' |_____  _|__|                       |____ |___ _| `--.__   )
+ `-'      [______[]___]_]                     [_____[]___[__]      `-'
+          ,;=| `----<__|                       |  |  |  |==.
+          I  |________ {                       }-<   |_/   |I
+          H  | |  ___} |                       |  `-------.|H
+          H----'   __=-|                       |---O--.   | H
+         _U===[=====]===]                     [=====[===]===U_
+        |  / :    : :  \\                       / :..  :    \\  |
+        | |  :    :'    \\                     /    :..:'':  | |
+        | / .`..'':.   _|                     |_ .:'     :..\\ |
+        |_|'  :     :  (                       ) :  .''':   |_|
+          =======U======                       ======U=======
+          \\ \\ |   8| / /                       \\ \\ |8   | / /
+           \\ \\ \\  8 / /                         \\ \\ 8  / / /
+            >-----8o-<                           >-o8-----<
+            |:|:|:|8||                           ||8|:|:|:|
+            |:|:|:|8||                           ||8|:|:|:|
+            |:|:|:|8o|                           |o8|:|:|:|
+            |:|:|:|:8|                           |8:|:|:|:|
+                    8                             8
+                    8o                           o8
+                     8                           8
+                     8             _             8
+                     8o           |_|           o8
+                      8         ,<| |>.         8
+                      8o      ,' /   \\ `.      o8
+                       8|.  ,'   | _ |   `.  ,|8
+                       8o ;:.,'| |[X]| |`..;: o8
+                        8' ,'`.| |[X]| |,'`. `8
+                        8o'     /,'=`.\\     `o8
+                         8oo)   || : ||   (oo8
+                           |8o  || V ||  o8|
+                           []8 _'|[_]|`_ 8[]
+                           ==8[_)`---'(_]8==
+                         ,'  `   )   (   '  `.
+                        /       | ___ |       \\
+                        |=====  ||   ||  =====|
+                        |  HH   ||   ||   HH  |
+                        |__HH__ ||___|| __HH__|
+                        `------' | = | `------'
+                           `'    |   |    `'
+                                  \\_/
+"""
+        print(pod)
     }
 }
 
