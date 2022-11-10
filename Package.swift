@@ -7,8 +7,8 @@ let package = Package(
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .executable(
-            name: "sebulba"",
-            targets: ["sebulba""])
+            name: "sebulba",
+            targets: ["sebulba"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0"),
@@ -16,10 +16,11 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "sebulba"",
+            name: "sebulba",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                "XcodeProjKit"]
+                "XcodeProjKit"],
+            path: "Sources/main"
         )
     ]
 )
