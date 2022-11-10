@@ -11,7 +11,7 @@ Destroy/de-integrate CocoaPods from your project
 ## Usage
 
 ```bash
-    sebulba --help
+sebulba --help
 ```
 
 ## Install
