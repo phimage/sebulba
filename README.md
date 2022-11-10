@@ -6,7 +6,7 @@
 [![build](https://github.com/phimage/sebulba/actions/workflows/build.yml/badge.svg)](https://github.com/phimage/sebulba/actions/workflows/build.yml)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%F0%9F%A7%A1-white.svg?style=flat)](https://github.com/sponsors/phimage)
 
-My cli tool description
+Destroy/de-integrate CocoaPods from your project
 
 ## Usage
 
@@ -35,3 +35,13 @@ or if we want without swift runtime dependencies (ie static executable)
 ```bash
 swift build -c release -Xswiftc -static-executable
 ```
+
+## Alternative
+
+If you have CocoaPods and ruby well installed you could use [cocoapods-deintegrate](https://github.com/CocoaPods/cocoapods-deintegrate)
+
+## Sebulba
+
+![Sebulba crash](https://media.giphy.com/media/15hLVBiYavX629Yo4N/giphy.gif)
+
+[Youtube Link](https://www.youtube.com/watch?v=-VCL1S_gjTw)
