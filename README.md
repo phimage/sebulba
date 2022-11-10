@@ -40,6 +40,10 @@ swift build -c release -Xswiftc -static-executable
 
 If you have CocoaPods and ruby well installed you could use [cocoapods-deintegrate](https://github.com/CocoaPods/cocoapods-deintegrate)
 
+### Carthage
+
+For carthage I have made [punic](https://github.com/phimage/punic)
+
 ## Sebulba
 
 ![Sebulba crash](https://media.giphy.com/media/15hLVBiYavX629Yo4N/giphy.gif)
