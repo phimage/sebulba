@@ -43,7 +43,8 @@ struct Cmd: ParsableCommand {
         let xcodeProj = try XcodeProj(url: url)
         manageProject(xcodeProj)
 
-        removePodDirectory()
+        removePodDirectory(url)
+        try xcodeProj.write(to: url)
         print("🧹 Project has been deintegrated. No traces of CocoaPods left in project.")
     }
 
@@ -58,36 +59,42 @@ struct Cmd: ParsableCommand {
 
     func manageTarget(_ target: PBXTarget) {
         print(" 🎯 Deintegrating target \(target.name)")
+
+        _ = target.buildPhases.flatMap({$0.files}).compactMap({$0.fileRef}) // just force loading if issue with link
+
         manageShellScriptPhase(target, "Copy Pods Resources")
         manageShellScriptPhase(target, "Check Pods Manifest.lock")
         manageShellScriptPhase(target, "Embed Pods Frameworks")
         manageUserShellScriptPhase(target)
+
         managePodsLibraries(target)
         manageConfigurationFileReferences(target)
     }
 
-    func removePodDirectory() {
-        // TODO: remove pod directory
+    func removePodDirectory(_ url: URL) {
+        if url.isDirectory {
+            let podDirectory = url.deletingLastPathComponent().appendingPathComponent("Pods")
+            try? FileManager.default.removeItem(at: podDirectory)
+        } // else? maybe pbxproj passed? ignore?
     }
 
     func managePodsLibraries(_ target: PBXTarget) {
         let buildPhases = target.buildPhases
             .compactMap { $0 as? PBXFrameworksBuildPhase }
-        
+
         var buildFiles = buildPhases.flatMap({$0.files})
         buildFiles = buildFiles.filter {
             (($0.fileRef?.name?.hasPrefix("libPods") ?? false) && ($0.fileRef?.name?.hasSuffix( ".a") ?? false))
             || (($0.fileRef?.name?.hasPrefix( "Pods") ?? false) && ($0.fileRef?.name?.hasSuffix(".framework") ?? false))
         }
-        if (buildFiles.isEmpty) {
+        if buildFiles.isEmpty {
             return
         }
         print("Removing Pod libraries from build phase:")
-        // TODO: remove pod libraries
-        
+
         for file in buildFiles {
-            // TODO: remove fileRef
-            // TODO: remove file
+            file.fileRef?.remove()
+            file.remove()
             print("  🗑 \(file.fileRef?.name ?? "")")
         }
         print("   ↳ Deleted \(buildFiles.count) build files.")
@@ -98,7 +105,7 @@ struct Cmd: ParsableCommand {
             .compactMap { $0 as? PBXShellScriptBuildPhase }
             .filter { $0.name?.hasPrefix("[CP-User] ") ?? false}
         for phase in buildPhases {
-            // TODO: remove phase
+            phase.remove()
             print("  🗑 \(phase.name ?? "")")
         }
         print("   ↳ Deleted \(buildPhases.count) user build phases.")
@@ -109,7 +116,7 @@ struct Cmd: ParsableCommand {
             .compactMap { $0 as? PBXShellScriptBuildPhase }
             .filter { $0.name?.contains(phaseName) ?? false}
         for phase in buildPhases {
-            // TODO: remove phase
+            phase.remove()
             print("  🗑 \(phase.name ?? "")")
         }
         print("   ↳ Deleted \(buildPhases.count) user build phases \(phaseName).")
@@ -119,9 +126,9 @@ struct Cmd: ParsableCommand {
         guard let mainGroup = project.project.mainGroup else { return }
         let groups = mainGroup.allSubGroups
             .filter { $0.name == groupName }
-            .filter { $0.isEmpty }
+            .filter { $0.children.isEmpty }
         for group in groups {
-            // TODO: remove group
+            group.remove()
             print("  🗑 \(group.name ?? "")")
         }
         print("   ↳ Deleted \(groups.count) empty `\(groupName)` groups from project.")
@@ -129,16 +136,16 @@ struct Cmd: ParsableCommand {
     }
 
     func manageConfigurationFileReferences(_ target: PBXTarget) {
-        /* var configFiles = target.buildConfigurationList?.buildConfigurations.compactMap( { $0.buildSettings})
-         // TODO: filter on config files with name /^Pods.*\.xcconfig$/i
-         if (configFiles.isEmpty) { return }
-         
-         
+        let configFiles = target.buildConfigurationList?.buildConfigurations.compactMap { $0.baseConfigurationReference }
+            .filter { ($0.name?.hasPrefix( "Pods.") ?? false) && ($0.name?.hasSuffix(".xcconfig") ?? false) } ?? []
+
+        if configFiles.isEmpty { return }
+
         print("Deleting configuration file references")
         for file in configFiles {
             print("  🗑 \(file.name ?? "")")
-           // TODO: remove config file
-        }*/
+            file.remove()
+        }
     }
 
     func deletePodsFileReferences(_ project: XcodeProj) {
@@ -147,14 +154,18 @@ struct Cmd: ParsableCommand {
         let files = groups.flatMap({ $0.fileRefs})
             .filter { (($0.name?.hasPrefix("Pods") ?? false) && ($0.name?.hasSuffix( ".xcconfig") ?? false))
                 || (($0.path?.hasPrefix("libPods") ?? false) && ($0.path?.hasSuffix( ".a") ?? false))
-                || (($0.path?.hasPrefix( "Pods") ?? false) && ($0.path?.hasSuffix(".framework") ?? false))
-            }
+                || (($0.path?.hasPrefix( "Pods_") ?? false) && ($0.path?.hasSuffix(".framework") ?? false)) }
 
         if files.isEmpty { return }
+
+        let buildFiles = project.objects.dict.values.compactMap { $0 as? PBXBuildFile }
+        _ = project.objects.dict.values.compactMap { $0 as? PBXTarget }.map { $0.productReference } // force load ref
+
         print("📄 Deleting Pod file references from project")
-        for file in files {
-            print("   🗑 \(file.name ?? file.path ?? "")")
-            // TODO: remove file
+        for fileRef in files {
+            print("   🗑 \(fileRef.name ?? fileRef.path ?? "")")
+            _ = buildFiles.filter { $0.fileRef?.ref == fileRef.ref }.map { $0.remove() }
+            fileRef.remove()
         }
 
         // Delete empty `Pods` group if exists
@@ -235,10 +246,6 @@ extension PBXGroup {
             result += group.allSubGroups
         }
         return result
-    }
-
-    var isEmpty: Bool {
-        return false
     }
 }
 

@@ -11,9 +11,12 @@ Destroy/de-integrate CocoaPods from your project
 ## Usage
 
 ```bash
-sebulba --help
+sebulba /path/where/project/is/
 ```
 
+```bash
+sebulba --recursive /path/where/we/could/find/many/projects
+```
 ## Install
 
 Just download from release if any, or build it (and move it to `PATH`)
